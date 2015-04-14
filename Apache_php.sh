@@ -16,6 +16,7 @@ PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin:~/bin
 export PATH
 
 #
+chmod +x ./Apache_php.sh
 apache_port=6666
 
 #dir
