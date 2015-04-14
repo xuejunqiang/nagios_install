@@ -15,10 +15,6 @@ fi
 PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin:~/bin
 export PATH
 
-#create user
-useradd nagios
-groupadd nagcmd
-usermod -a -G nagcmd nagios
 #
 apache_port=6666
 
@@ -40,7 +36,7 @@ if [ "$update" = "yes" ];then
 yum -y update
 yum makecache -y
 fi
-for packages in gcc gcc-c++ make cmake lsof wget unzip  flex bison file libtool libtool-libs autoconf kernel-devel t1lib-devel libjpeg libjpeg-devel libpng libpng-devel  gd gd-devel libicu-devel  freetype freetype-devel libcurl-devel libxml2 libxml2-devel zlib zlib-devel glib2 glib2-devel bzip2 bzip2-devel libevent libevent-devel curl curl-devel e2fsprogs e2fsprogs-devel  krb5-devel libidn libidn-devel openssl openssl-devel  pcre pcre-devel gettext gettext-devel  gmp-devel libcap diffutils  
+for packages in gcc gcc-c++  glibc glibc-commons libtool libtool-libs   autoconf kernel-devel make cmake lsof wget unzip  flex bison file  t1lib-devel libjpeg libjpeg-devel libpng libpng-devel  gd gd-devel libicu-devel  freetype freetype-devel libcurl-devel libxml2 libxml2-devel zlib zlib-devel glib2 glib2-devel bzip2 bzip2-devel libevent libevent-devel curl curl-devel e2fsprogs e2fsprogs-devel  krb5-devel libidn libidn-devel openssl openssl-devel  pcre pcre-devel gettext gettext-devel  gmp-devel libcap diffutils net-snmp 
 do
  
 yum -y install $packages
@@ -256,4 +252,5 @@ echo "web directory : $home_dir"
 echo "web log directory : $wwwlogs_dir "
 echo "php directory : $php_dir"
 echo "apache directory : $apache_dir"
+echo "http://$ip:6666/"
 echo "=============================================================================="
