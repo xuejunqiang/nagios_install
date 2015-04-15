@@ -2,9 +2,9 @@
 # Host environment: centos 6.6
 #author: xuejq
 #
-#apache :/home/nagios/apache
-#php	:/home/nagios/php
-#源码编译文件bak:/home/nagios/source_bak
+#apache :/home/nagios_soft/apache
+#php	:/home/nagios_soft/php
+#源码编译文件bak:/home/nagios_soft/source_bak
 #blog: xuejqone.com 
 
 # Check if user is root
@@ -20,12 +20,12 @@ chmod +x ./Apache_php.sh
 apache_port=6666
 
 #dir
-apache_dir=/home/nagios/apache
+apache_dir=/home/nagios_soft/apache
 current_dir=`pwd`
-php_dir=/home/nagios/php
-wwwlogs_dir=/home/wwwlogs_dir
-home_dir=/home/wwww_dir/web
-bak_dir=/home/nagios/source_bak
+php_dir=/home/nagios_soft/php
+wwwlogs_dir=/home/nagios_soft/wwwlogs_dir
+home_dir=/home/nagios_soft/web
+bak_dir=/home/nagios_soft/source_bak
 mkdir -p $home_dir
 mkdir -p $wwwlogs_dir
 mkdir -p $bak_dir
@@ -37,7 +37,7 @@ if [ "$update" = "yes" ];then
 yum -y update
 yum makecache -y
 fi
-for packages in gcc gcc-c++  glibc glibc-commons libtool libtool-libs   autoconf kernel-devel make cmake lsof wget unzip  flex bison file  t1lib-devel libjpeg libjpeg-devel libpng libpng-devel  gd gd-devel libicu-devel  freetype freetype-devel libcurl-devel libxml2 libxml2-devel zlib zlib-devel glib2 glib2-devel bzip2 bzip2-devel libevent libevent-devel curl curl-devel e2fsprogs e2fsprogs-devel  krb5-devel libidn libidn-devel openssl openssl-devel  pcre pcre-devel gettext gettext-devel  gmp-devel libcap diffutils net-snmp 
+for packages in gcc gcc-c++  glibc glibc-commons libtool libtool-libs   autoconf kernel-devel make cmake lsof wget unzip  flex bison file  t1lib-devel libjpeg libjpeg-devel libpng libpng-devel  gd gd-devel libicu-devel  freetype freetype-devel libcurl-devel libxml2 libxml2-devel zlib zlib-devel glib2 glib2-devel bzip2 bzip2-devel libevent libevent-devel curl curl-devel e2fsprogs e2fsprogs-devel  krb5-devel libidn libidn-devel openssl openssl-devel  pcre pcre-devel gettext gettext-devel  gmp-devel libcap diffutils net-snmp perl-Time-HiRes rrdtool  rrdtool-perl mailx sendmail
 do
  
 yum -y install $packages
@@ -170,14 +170,16 @@ sed -i 's@^mysqlnd.collect_memory_statistics.*@mysqlnd.collect_memory_statistics
 cd ..
 mv php-5.5.23 /home/nagios/source_bak
 #start httpd php-/
-useradd -s /sbin/nologin www
-sed -i 's@^User daemon@User www@' $apache_dir/conf/httpd.conf
-sed -i 's@^Group daemon@Group www@' $apache_dir/conf/httpd.conf
+sed -i 's@^User daemon@User nagios@' $apache_dir/conf/httpd.conf
+sed -i 's@^Group daemon@Group nagcmd@' $apache_dir/conf/httpd.conf
 sed -i "s@AddType\(.*\)Z@AddType\1Z\n    AddType application/x-httpd-php .php .phtml\n    AddType application/x-httpd-php-source .phps@" $apache_dir/conf/httpd.conf
 sed -i 's@^#LoadModule rewrite_module@LoadModule rewrite_module@' $apache_dir/conf/httpd.conf
 sed -i 's@^#LoadModule\(.*\)mod_deflate.so@LoadModule\1mod_deflate.so@' $apache_dir/conf/httpd.conf
+sed -i 's@^#LoadModule\(.*\)mod_cgi.so@LoadModule\mod_cgi.so@' $apache_dir/conf/httpd.conf
+sed -i 's@^#LoadModule\(.*\)mod_slotmem_shm.so@LoadModule\mod_slotmem_shm.so@' $apache_dir/conf/httpd.conf
 sed -i 's@DirectoryIndex index.html@DirectoryIndex index.html index.php@' $apache_dir/conf/httpd.conf
 sed -i "s@^#Include conf/extra/httpd-mpm.conf@Include conf/extra/httpd-mpm.conf@" $apache_dir/conf/httpd.conf
+
 #port
 sed -i "s@^Listen 80 @Listen $apache_port@" $apache_dir/conf/httpd.conf
 
@@ -211,7 +213,7 @@ mkdir $apache_dir/conf/vhost
 
 #test
 
-cat >$apache_dir/conf/vhost/nagios.conf<EOF
+cat >$apache_dir/conf/vhost/test.conf<EOF
 <VirtualHost $ip:$apache_port>
     ServerAdmin  admin@xuejqone.com
     DocumentRoot "$home_dir"
