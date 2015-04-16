@@ -11,6 +11,7 @@
 3 In the file/etc/mail. Rc file finally add configuration
 
 在文件/etc/mail.rc文件最后添加配置
+
 set from=xxx@xxx.com  smtp=smtp.exmail.xxx.com  smtp-auth-user=user  smtp-auth-password=password smtp-auth=login
 
 
