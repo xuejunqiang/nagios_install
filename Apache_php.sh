@@ -1,10 +1,10 @@
-﻿#!/bin/bash
+#!/bin/bash
 # Host environment: centos 6.6
 #author: xuejq
 #
 #apache :/home/nagios_soft/apache
 #php	:/home/nagios_soft/php
-#源码编译文件bak:/home/nagios_soft/source_bak
+#source bak:/home/nagios_soft/source_bak
 #blog: xuejqone.com 
 
 # Check if user is root
@@ -16,7 +16,6 @@ PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin:~/bin
 export PATH
 
 #
-chmod +x ./Apache_php.sh
 apache_port=6666
 
 #dir
@@ -26,20 +25,27 @@ php_dir=/home/nagios_soft/php
 wwwlogs_dir=/home/nagios_soft/wwwlogs_dir
 home_dir=/home/nagios_soft/web
 bak_dir=/home/nagios_soft/source_bak
+if [ ! -d $home_dir ];then
 mkdir -p $home_dir
+fi
+if [ ! -d $wwwlogs_dir ];then
 mkdir -p $wwwlogs_dir
+fi
+if [ ! -d $bak_dir ];then
 mkdir -p $bak_dir
+fi
+if [ ! -d $current_dir ];then
 mkdir $current_dir/apache
+fi
 
 #Yum environment depend on the installation
-read -p "Update the system? yes |no " update
+read -p "Update the system?(yes |no ):" update
 if [ "$update" = "yes" ];then
 yum -y update
 yum makecache -y
 fi
 for packages in gcc gcc-c++  glibc glibc-commons libtool libtool-libs   autoconf kernel-devel make cmake lsof wget unzip  flex bison file  t1lib-devel libjpeg libjpeg-devel libpng libpng-devel  gd gd-devel libicu-devel  freetype freetype-devel libcurl-devel libxml2 libxml2-devel zlib zlib-devel glib2 glib2-devel bzip2 bzip2-devel libevent libevent-devel curl curl-devel e2fsprogs e2fsprogs-devel  krb5-devel libidn libidn-devel openssl openssl-devel  pcre pcre-devel gettext gettext-devel  gmp-devel libcap diffutils net-snmp perl-Time-HiRes rrdtool  rrdtool-perl mailx sendmail
-do
- 
+do 
 yum -y install $packages
 sleep 2
 done
@@ -79,32 +85,32 @@ mkdir $current_dir/php
 fi
 cd $current_dir/php
 if [ -s ./libiconv-1.14.tar.gz ];then
-	echo "libiconv-1.14.tar.gz [found]"
+echo "libiconv-1.14.tar.gz [found]"
 else	
-	 echo "Error: libiconv-1.14 not found !!! downloading ..."
-	 wget -c ftp://xuejqone.com/nagios/libiconv-1.14.tar.gz
-	soft_test
+ echo "Error: libiconv-1.14 not found !!! downloading ..."
+ wget -c ftp://xuejqone.com/nagios/libiconv-1.14.tar.gz
+soft_test
 fi
 if [ -s ./mhash-0.9.9.9.tar.gz ];then
-	echo "mhash-0.9.9.9.tar.gz [found]"
+echo "mhash-0.9.9.9.tar.gz [found]"
 else	
-	 echo "Error: mhash-0.9.9.9.tar.gz not found !!! downloading ..."
-	 wget -c ftp://xuejqone.com/nagios/mhash-0.9.9.9.tar.gz
-	soft_test
+ echo "Error: mhash-0.9.9.9.tar.gz not found !!! downloading ..."
+ wget -c ftp://xuejqone.com/nagios/mhash-0.9.9.9.tar.gz
+soft_test
 fi
 if [ -s ./libmcrypt-2.5.8.tar.gz ];then
-	echo "libmcrypt-2.5.8.tar.gz [found]"
+echo "libmcrypt-2.5.8.tar.gz [found]"
 else	
-	 echo "Error: libmcrypt-2.5.8.tar.gz not found !!! downloading ..."
-	 wget -c ftp://xuejqone.com/nagios/libmcrypt-2.5.8.tar.gz
-	soft_test
+ echo "Error: libmcrypt-2.5.8.tar.gz not found !!! downloading ..."
+ wget -c ftp://xuejqone.com/nagios/libmcrypt-2.5.8.tar.gz
+soft_test
 fi
 if [ -s ./php-5.5.23.tar.gz ];then
-	echo "php-5.5.23.tar.gz [found]"
+echo "php-5.5.23.tar.gz [found]"
 else
-	echo "Error: php-5.5.23.tar.gz not found !!! downloading ..."
-	 wget -c ftp://xuejqone.com/nagios/php-5.5.23.tar.gz
-	soft_test
+echo "Error: php-5.5.23.tar.gz not found !!! downloading ..."
+ wget -c ftp://xuejqone.com/nagios/php-5.5.23.tar.gz
+soft_test
 fi
 tar xvf libiconv-1.14.tar.gz
 cd libiconv-1.14 && ./configure && make && make install && cd ..
@@ -141,15 +147,15 @@ cp php.ini-development  $php_dir/etc/php.ini
 # Modify php.ini
 Mem=`free -m | awk '/Mem:/{print $2}'`
 if [ $Mem -gt 1024 -a $Mem -le 1500 ];then
-	Memory_limit=192
+Memory_limit=192
 elif [ $Mem -gt 1500 -a $Mem -le 3500 ];then
-	Memory_limit=256
+Memory_limit=256
 elif [ $Mem -gt 3500 -a $Mem -le 4500 ];then
-	Memory_limit=320
+Memory_limit=320
 elif [ $Mem -gt 4500 ];then
-	Memory_limit=448
+Memory_limit=448
 else
-	Memory_limit=128
+Memory_limit=128
 fi
 sed -i "s@^memory_limit.*@memory_limit = ${Memory_limit}M@" $php_dir/etc/php.ini
 sed -i 's@^output_buffering =@output_buffering = On\noutput_buffering =@'  $php_dir/etc/php.ini
@@ -224,7 +230,7 @@ cat >$apache_dir/conf/vhost/test.conf<EOF
 <Directory "$home_dir">
     SetOutputFilter DEFLATE
     Options FollowSymLinks
-	Require all granted
+Require all granted
     AllowOverride All
     Order allow,deny
     Allow from all

@@ -1,4 +1,4 @@
-﻿#!/bin/bash
+#!/bin/bash
 # Host environment: centos 6.6
 #author: xuejq
 #nagios dir :/home/nagios_soft/nagios
@@ -7,7 +7,7 @@
 current_dir=`pwd`
 
 # Check if user is root
-if [ $(id -u) != "0" ]; then
+if [ $(id -u) != "0" ];then
     echo "Error: please use root to install this script!"
     exit 1
 fi
@@ -17,8 +17,12 @@ nagios_dir=/home/nagios_soft/nagios
 nagios_web_dir=/home/nagios_soft/web/nagios
 apache_dir=/home/nagios_soft/apache
 pnp4_dir=/home/nagios_soft/pnp4nagios
+if [ ! -d $nagios_web_dir ];then
 mkdir $nagios_web_dir
-
+fi
+cd $current_dir
+chmod +x ./Apache_php.sh
+./Apache_php.sh
 #create user
 useradd nagios
 groupadd nagcmd
