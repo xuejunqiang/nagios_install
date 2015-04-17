@@ -103,16 +103,39 @@ mv check_all_local_disks.cfg-sample check_all_local_disks.cfg
 mv check_nrpe.cfg-sample check_nrpe.cfg
 mv check_nwstat.cfg-sample check_nwstat.cfg
 #
-cd $current_dir/nagios_cfg
-
-mv $nagios_dir/etc/objects/commands.cfg       $nagios_dir/etc/objects/commands.cfgbak
-cp ./commands.cfg                          $nagios_dir/etc/objects/
-mv $nagios_dir/etc/objects/templates.cfg      $nagios_dir/etc/objects/templates.cfgbak
-cp ./templates.cfg                         $nagios_dir/etc/objects/
-mv $nagios_dir/etc/nagios.cfg 		     $nagios_dir/etc/nagios.cfgbak
-cp ./nagios.cfg 			           $nagios_dir/etc/
-
+cd  $nagios_dir
+sed -i 's@^process_performance_data=0@process_performance_data=1@' etc/nagios.cfg
+cat >>etc/nagios.cfg<<EOF
+host_perfdata_command=process-host-perfdata
+service_perfdata_command=process-service-perfdata
+host_perfdata_file=$pnp4_dir/var/host-perfdata
+host_perfdata_file=$pnp4_dir/var/host-perfdata
+host_perfdata_file_template=DATATYPE::HOSTPERFDATA\tTIMET::$TIMET$\tHOSTNAME::$HOSTNAME$\tHOSTPERFDATA::$HOSTPERFDATA$\tHOSTCHECKCOMMAND::$HOSTCHECKCOMMAND$\tHOSTSTATE::$HOSTSTATE$\tHOSTSTATETYPE::$HOSTSTATETYPE$
+service_perfdata_file_template=DATATYPE::SERVICEPERFDATA\tTIMET::$TIMET$\tHOSTNAME::$HOSTNAME$\tSERVICEDESC::$SERVICEDESC$\tSERVICEPERFDATA::$SERVICEPERFDATA$\tSERVICECHECKCOMMAND::$SERVICECHECKCOMMAND$\tHOSTSTATE::$HOSTSTATE$\tHOSTSTATETYPE::$HOSTSTATETYPE$\tSERVICESTATE::$SERVICESTATE$\tSERVICESTATETYPE::$SERVICESTATETYPE$
+host_perfdata_file_mode=a
+service_perfdata_file_mode=a
+host_perfdata_file_processing_interval=15
+service_perfdata_file_processing_interval=15
+host_perfdata_file_processing_command=process-host-perfdata-file
+service_perfdata_file_processing_command=process-service-perfdata-file
+EOF
 #
+
+sed -i '173 aaction_url     /pnp4nagios/index.php/graph?host=$HOSTNAME$&srv=$SERVICEDESC$'  etc/objects/templates.cfg
+
+cat >>etc/objects/commands.cfg<<EOF
+
+define command{
+       command_name    process-service-perfdata-file
+       command_line    /bin/mv $pnp4_dir/var/service-perfdata $pnp4_dir/var/spool/service-perfdata.$TIMET$
+}
+define command{
+       command_name    process-host-perfdata-file
+       command_line    /bin/mv $pnp4_dir/var/host-perfdata $pnp4_dir/var/spool/host-perfdata.$TIMET$
+}
+
+EOF
+                                                
 mv $pnp4_dir/share/install.php $pnp4_dir/share/install.phpbak
 chown nagios.nagcmd -R $pnp4_dir
 chown nagios.nagcmd -R $nagios_dir
@@ -122,4 +145,11 @@ service apached restart
 chkconfig nagios on
 service nagios restart
 chkconfig npcd on
-service npcd restart
+service npcd start
+
+echo "==========================================================================================="
+echo "nagios dir : $nagios_dir"
+echo "pnp4nagios dir : $pnp4_dir"
+echo "Email Spam Alert :   We need to add your mail  to  $nagios_dir/etc/objects/contacts.cfg   "
+echo "============================================================================================"
+
