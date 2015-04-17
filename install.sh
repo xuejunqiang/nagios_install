@@ -24,7 +24,7 @@ nagios_web_dir=/home/nagios_soft/web/nagios
 apache_dir=/home/nagios_soft/apache
 pnp4_dir=/home/nagios_soft/pnp4nagios
 if [ ! -d $nagios_web_dir ];then
-mkdir $nagios_web_dir
+mkdir -p $nagios_web_dir
 fi
 cd $current_dir
 chmod +x ./Apache_php.sh
