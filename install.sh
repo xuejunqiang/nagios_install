@@ -13,6 +13,12 @@ if [ $(id -u) != "0" ];then
 fi
 PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin:~/bin
 export PATH
+function soft_test(){
+   if [ $? -ne 0 ];then
+   exit 1;
+   fi
+}
+
 nagios_dir=/home/nagios_soft/nagios
 nagios_web_dir=/home/nagios_soft/web/nagios
 apache_dir=/home/nagios_soft/apache
@@ -23,15 +29,11 @@ fi
 cd $current_dir
 chmod +x ./Apache_php.sh
 ./Apache_php.sh
+soft_test
 #create user
 useradd nagios
 groupadd nagcmd
 usermod -a -G nagcmd nagios
-function soft_test(){
-   if [ $? -ne 0 ];then
-   exit 1;
-   fi
-}
 mkdir $current_dir/nagios
 cd $current_dir/nagios
 

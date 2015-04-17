@@ -19,12 +19,12 @@ export PATH
 apache_port=6666
 
 #dir
-apache_dir=/home/nagios_soft/apache
+apache_dir="/home/nagios_soft/apache"
 current_dir=`pwd`
-php_dir=/home/nagios_soft/php
-wwwlogs_dir=/home/nagios_soft/wwwlogs_dir
-home_dir=/home/nagios_soft/web
-bak_dir=/home/nagios_soft/source_bak
+php_dir="/home/nagios_soft/php"
+wwwlogs_dir="/home/nagios_soft/wwwlogs_dir"
+home_dir="/home/nagios_soft/web"
+bak_dir="/home/nagios_soft/source_bak"
 if [ ! -d $home_dir ];then
 mkdir -p $home_dir
 fi
@@ -141,7 +141,9 @@ cd php-5.5.23
  ./configure --prefix=$php_dir  --with-apxs2=$apache_dir/bin/apxs  --with-png-dir --with-jpeg-dir --with-freetype-dir --with-zlib --with-gd --enable-gd-native-ttf  --with-mcrypt --with-mysql=mysqlnd  --with-mysqli=mysqlnd --with-pdo-mysql=mysqlnd --with-iconv-dir --with-libxml-dir=/usr --enable-xml --enable-bcmath --enable-shmop --enable-sysvsem --enable-inline-optimization --with-curl --enable-mbregex --enable-mbstring=all --with-gd --enable-gd-native-ttf --with-openssl --with-mhash --enable-pcntl --enable-sockets --with-xmlrpc --enable-zip --enable-soap --with-gettext  --enable-sysvmsg --enable-sysvsem --enable-sysvmsg
 soft_test
  ln -s /usr/local/lib/libiconv.so.2 /usr/lib64/
-make ZEND_EXTRA_LIBS='-liconv' && make install
+make ZEND_EXTRA_LIBS='-liconv' 
+soft_test
+make install
 soft_test
 cp php.ini-development  $php_dir/etc/php.ini
 # Modify php.ini
@@ -175,20 +177,23 @@ sed -i 's@^mysqlnd.collect_memory_statistics.*@mysqlnd.collect_memory_statistics
 
 cd ..
 mv php-5.5.23 /home/nagios/source_bak
+
 #start httpd php-/
-sed -i 's@^User daemon@User nagios@' $apache_dir/conf/httpd.conf
-sed -i 's@^Group daemon@Group nagcmd@' $apache_dir/conf/httpd.conf
-sed -i "s@AddType\(.*\)Z@AddType\1Z\n    AddType application/x-httpd-php .php .phtml\n    AddType application/x-httpd-php-source .phps@" $apache_dir/conf/httpd.conf
-sed -i 's@^#LoadModule rewrite_module@LoadModule rewrite_module@' $apache_dir/conf/httpd.conf
-sed -i 's@^#LoadModule\(.*\)mod_deflate.so@LoadModule\1mod_deflate.so@' $apache_dir/conf/httpd.conf
-sed -i 's@^#LoadModule\(.*\)mod_cgi.so@LoadModule\mod_cgi.so@' $apache_dir/conf/httpd.conf
-sed -i 's@^#LoadModule\(.*\)mod_slotmem_shm.so@LoadModule\mod_slotmem_shm.so@' $apache_dir/conf/httpd.conf
-sed -i 's@DirectoryIndex index.html@DirectoryIndex index.html index.php@' $apache_dir/conf/httpd.conf
-sed -i "s@^#Include conf/extra/httpd-mpm.conf@Include conf/extra/httpd-mpm.conf@" $apache_dir/conf/httpd.conf
+cd $apache_dir
+sed -i 's@^User daemon@User nagios@' ./conf/httpd.conf
+sed -i 's@^Group daemon@Group nagcmd@' ./conf/httpd.conf
+sed -i "s@AddType\(.*\)Z@AddType\1Z\n    AddType application/x-httpd-php .php .phtml\n    AddType application/x-httpd-php-source .phps@" ./conf/httpd.conf
+sed -i 's@^#LoadModule rewrite_module@LoadModule rewrite_module@' ./conf/httpd.conf
+sed -i 's@^#LoadModule\(.*\)mod_deflate.so@LoadModule\1mod_deflate.so@' ./conf/httpd.conf
+sed -i 's@^#LoadModule\(.*\)mod_cgi.so@LoadModule\mod_cgi.so@' ./conf/httpd.conf
+sed -i 's@^#LoadModule\(.*\)mod_slotmem_shm.so@LoadModule\mod_slotmem_shm.so@' ./conf/httpd.conf
+sed -i 's@DirectoryIndex index.html@DirectoryIndex index.html index.php@' ./conf/httpd.conf
+sed -i "s@^#Include conf/extra/httpd-mpm.conf@Include conf/extra/httpd-mpm.conf@" ./conf/httpd.conf
 
 #port
-sed -i "s@^Listen 80 @Listen $apache_port@" $apache_dir/conf/httpd.conf
-
+#sed -i "s@^Listen 80 @Listen $apache_port@" $apache_dir/conf/httpd.conf
+sed -i "s@^Listen@#Listen@" /home/nagios_soft/apache/conf/httpd.conf 
+sed -i "50aListen 6666" /home/nagios_soft/apache/conf/httpd.conf 
 totalip=`ifconfig -a|grep inet|grep -v 127.0.0.1|grep -v inet6 |awk '{print $2}'|tr -d "addr:" |wc -l`
 if [ $ -ne 1 ];then
 ip=`ifconfig -a|grep inet|grep -v 127.0.0.1|grep -v inet6 |awk '{print $2}'|tr -d "addr:"`
