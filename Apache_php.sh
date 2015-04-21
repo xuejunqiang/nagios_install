@@ -44,7 +44,7 @@ if [ "$update" = "yes" ];then
 yum -y update
 yum makecache -y
 fi
-for packages in gcc gcc-c++  glibc glibc-commons libtool libtool-libs   autoconf kernel-devel make cmake lsof wget unzip  flex bison file  t1lib-devel libjpeg libjpeg-devel libpng libpng-devel  gd gd-devel libicu-devel  freetype freetype-devel libcurl-devel libxml2 libxml2-devel zlib zlib-devel glib2 glib2-devel bzip2 bzip2-devel libevent libevent-devel curl curl-devel e2fsprogs e2fsprogs-devel  krb5-devel libidn libidn-devel openssl openssl-devel  pcre pcre-devel gettext gettext-devel  gmp-devel libcap diffutils net-snmp perl-Time-HiRes rrdtool  rrdtool-perl mailx sendmail
+for packages in gcc gcc-c++  glibc glibc-commons libtool libtool-libs   autoconf kernel-devel make cmake lsof wget unzip  flex bison file  t1lib-devel libjpeg libjpeg-devel libpng libpng-devel  gd gd-devel libicu-devel  freetype freetype-devel libcurl-devel libxml2 libxml2-devel zlib zlib-devel glib2 glib2-devel bzip2 bzip2-devel libevent libevent-devel curl curl-devel e2fsprogs e2fsprogs-devel  krb5-devel libidn libidn-devel openssl openssl-devel  pcre pcre-devel gettext gettext-devel  gmp-devel libcap diffutils net-snmp perl-Time-HiRes rrdtool  rrdtool-perl mailx sendmail vim
 do 
 yum -y install $packages
 sleep 2
@@ -135,17 +135,19 @@ mv httpd-2.4.12 $bak_dir
 ############install php
 yum -y remove php*
 cd $current_dir/php
+ln -s /usr/local/lib/libiconv.so.2 /usr/lib64/
 rm -rf php-5.5.23
 tar zxvf php-5.5.23.tar.gz
 cd php-5.5.23
- ./configure --prefix=$php_dir  --with-apxs2=$apache_dir/bin/apxs  --with-png-dir --with-jpeg-dir --with-freetype-dir --with-zlib --with-gd --enable-gd-native-ttf  --with-mcrypt --with-mysql=mysqlnd  --with-mysqli=mysqlnd --with-pdo-mysql=mysqlnd --with-iconv-dir --with-libxml-dir=/usr --enable-xml --enable-bcmath --enable-shmop --enable-sysvsem --enable-inline-optimization --with-curl --enable-mbregex --enable-mbstring=all --with-gd --enable-gd-native-ttf --with-openssl --with-mhash --enable-pcntl --enable-sockets --with-xmlrpc --enable-zip --enable-soap --with-gettext  --enable-sysvmsg --enable-sysvsem --enable-sysvmsg
+./configure --prefix=$php_dir  --with-apxs2=$apache_dir/bin/apxs  --with-png-dir --with-jpeg-dir --with-freetype-dir --with-zlib --with-gd --enable-gd-native-ttf  --with-mcrypt --with-mysql=mysqlnd  --with-mysqli=mysqlnd --with-pdo-mysql=mysqlnd --with-iconv-dir --with-libxml-dir=/usr --enable-xml --enable-bcmath --enable-shmop --enable-sysvsem --enable-inline-optimization --with-curl --enable-mbregex --enable-mbstring=all --with-gd --enable-gd-native-ttf --with-openssl --with-mhash --enable-pcntl --enable-sockets --with-xmlrpc --enable-zip --enable-soap --with-gettext  --enable-sysvmsg --enable-sysvsem --enable-sysvmsg
 soft_test
- ln -s /usr/local/lib/libiconv.so.2 /usr/lib64/
 make ZEND_EXTRA_LIBS='-liconv' 
 soft_test
 make install
 soft_test
 cp php.ini-development  $php_dir/etc/php.ini
+cd ..
+mv php-5.5.23   $bak_dir
 # Modify php.ini
 Mem=`free -m | awk '/Mem:/{print $2}'`
 if [ $Mem -gt 1024 -a $Mem -le 1500 ];then
@@ -175,18 +177,16 @@ sed -i 's@^session.cookie_httponly.*@session.cookie_httponly = 1@' $php_dir/etc/
 sed -i 's@^mysqlnd.collect_memory_statistics.*@mysqlnd.collect_memory_statistics = On@' $php_dir/etc/php.ini
 [ -e /usr/sbin/sendmail ] && sed -i 's@^;sendmail_path.*@sendmail_path = /usr/sbin/sendmail -t -i@' $php_dir/etc/php.ini
 
-cd ..
-mv php-5.5.23 /home/nagios/source_bak
-
 #start httpd php-/
 cd $apache_dir
 sed -i 's@^User daemon@User nagios@' ./conf/httpd.conf
 sed -i 's@^Group daemon@Group nagcmd@' ./conf/httpd.conf
 sed -i "s@AddType\(.*\)Z@AddType\1Z\n    AddType application/x-httpd-php .php .phtml\n    AddType application/x-httpd-php-source .phps@" ./conf/httpd.conf
 sed -i 's@^#LoadModule rewrite_module@LoadModule rewrite_module@' ./conf/httpd.conf
-sed -i 's@^#LoadModule\(.*\)mod_deflate.so@LoadModule\1mod_deflate.so@' ./conf/httpd.conf
-sed -i 's@^#LoadModule\(.*\)mod_cgi.so@LoadModule\mod_cgi.so@' ./conf/httpd.conf
-sed -i 's@^#LoadModule\(.*\)mod_slotmem_shm.so@LoadModule\mod_slotmem_shm.so@' ./conf/httpd.conf
+sed -i 's@^#LoadModule slotmem_shm_module@LoadModule slotmem_shm_module@' ./conf/httpd.conf
+sed -i 's@^#LoadModule deflate_module@LoadModule deflate_module@' ./conf/httpd.conf
+sed -i 's@^#LoadModule cgi_module@LoadModule cgi_module@' ./conf/httpd.conf
+sed -i 's@^#LoadModule slotmem_shm_module@LoadModule slotmem_shm_module@' ./conf/httpd.conf
 sed -i 's@DirectoryIndex index.html@DirectoryIndex index.html index.php@' ./conf/httpd.conf
 sed -i "s@^#Include conf/extra/httpd-mpm.conf@Include conf/extra/httpd-mpm.conf@" ./conf/httpd.conf
 
@@ -195,9 +195,7 @@ sed -i "s@^#Include conf/extra/httpd-mpm.conf@Include conf/extra/httpd-mpm.conf@
 sed -i "s@^Listen@#Listen@" /home/nagios_soft/apache/conf/httpd.conf 
 sed -i "50aListen 6666" /home/nagios_soft/apache/conf/httpd.conf 
 totalip=`ifconfig -a|grep inet|grep -v 127.0.0.1|grep -v inet6 |awk '{print $2}'|tr -d "addr:" |wc -l`
-if [ $ -ne 1 ];then
-ip=`ifconfig -a|grep inet|grep -v 127.0.0.1|grep -v inet6 |awk '{print $2}'|tr -d "addr:"`
-else
+if [ $totalip -ne 1 ];then
 while true
 do
 read -p "Please input the closed network IP：" ip
@@ -207,7 +205,9 @@ else
 break;
 fi
 done 
-
+else
+ip=`ifconfig -a|grep inet|grep -v 127.0.0.1|grep -v inet6 |awk '{print $2}'|tr -d "addr:"`
+fi
 cat >> $apache_dir/conf/httpd.conf <<EOF
 ServerTokens ProductOnly
 ServerSignature Off
@@ -216,15 +216,10 @@ DeflateCompressionLevel 6
 SetOutputFilter DEFLATE
 Include conf/vhost/*.conf
 EOF
-
-sed -i "s@Include conf/extra/httpd-mpm.conf@Include conf/extra/httpd-mpm.conf\nInclude conf/extra/httpd-remoteip.conf@" $apache_dir/conf/httpd.conf
 sed -i "s@LogFormat \"%h %l@LogFormat \"%h %a %l@g" $apache_dir/conf/httpd.conf
-
 mkdir $apache_dir/conf/vhost
-
 #test
-
-cat >$apache_dir/conf/vhost/test.conf<EOF
+cat >$apache_dir/conf/vhost/test.conf<<EOF
 <VirtualHost $ip:$apache_port>
     ServerAdmin  admin@xuejqone.com
     DocumentRoot "$home_dir"
@@ -247,24 +242,12 @@ cat >$home_dir/index.php<<EOF
 <?php
 phpinfo();
 EOF
+
 #init apache
 grep -v "#" $apache_dir/bin/apachectl > /etc/init.d/apached
- sed 1'i\#!/bin/bash' /etc/init.d/apached
- sed 2'i\# chkconfig: 2345 85 15' /etc/init.d/apached
- sed 3'i\# description: Apache is a World Wide Web server.' /etc/init.d/apached
- sed 4'i\#blog :xuejqone.com' /etc/init.d/apached
+sed -i  1'i\#!/bin/bash' /etc/init.d/apached
+sed -i  2'i\# chkconfig: 2345 85 15' /etc/init.d/apached
+sed -i  3'i\# description: Apache is a World Wide Web server.' /etc/init.d/apached
+sed -i  4'i\#blog :xuejqone.com' /etc/init.d/apached
 chmod +x /etc/init.d/apached
 chkconfig apached on
-#start
-service apached start
-
-chkconfig --list | grep apached
-
-echo "=============================================================================="
-echo "start Apache :  service apached start"
-echo "web directory : $home_dir"
-echo "web log directory : $wwwlogs_dir "
-echo "php directory : $php_dir"
-echo "apache directory : $apache_dir"
-echo "http://$ip:6666/"
-echo "=============================================================================="
